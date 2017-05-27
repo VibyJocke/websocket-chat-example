@@ -1,4 +1,4 @@
-package com.lahtinen.cloud.service.frontend.infrastructure;
+package com.lahtinen.app.websocket.chat.infrastructure;
 
 import io.dropwizard.Configuration;
 

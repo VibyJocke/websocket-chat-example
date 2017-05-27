@@ -1,4 +1,4 @@
-package com.lahtinen.cloud.service.frontend.port.rest.request;
+package com.lahtinen.app.websocket.chat.port.rest.request;
 
 public class SendMessageRequest {
     private final String message;

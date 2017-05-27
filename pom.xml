@@ -83,7 +83,7 @@
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>
-                                        com.lahtinen.cloud.service.frontend.infrastructure.WebsocketApp
+                                        com.lahtinen.app.websocket.chat.infrastructure.WebsocketApp
                                     </mainClass>
                                 </transformer>
                             </transformers>

@@ -1,7 +1,7 @@
-package com.lahtinen.cloud.service.frontend.infrastructure;
+package com.lahtinen.app.websocket.chat.infrastructure;
 
 import be.tomcools.dropwizard.websocket.WebsocketBundle;
-import com.lahtinen.cloud.service.frontend.port.rest.ChatResource;
+import com.lahtinen.app.websocket.chat.port.rest.ChatResource;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;

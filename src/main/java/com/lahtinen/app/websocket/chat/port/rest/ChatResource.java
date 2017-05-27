@@ -1,12 +1,12 @@
-package com.lahtinen.cloud.service.frontend.port.rest;
+package com.lahtinen.app.websocket.chat.port.rest;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import com.lahtinen.cloud.service.frontend.domain.ChatService;
-import com.lahtinen.cloud.service.frontend.port.rest.request.CreateRoomRequest;
-import com.lahtinen.cloud.service.frontend.port.rest.request.JoinRoomRequest;
-import com.lahtinen.cloud.service.frontend.port.rest.request.Request;
-import com.lahtinen.cloud.service.frontend.port.rest.request.SendMessageRequest;
+import com.lahtinen.app.websocket.chat.domain.ChatService;
+import com.lahtinen.app.websocket.chat.port.rest.request.CreateRoomRequest;
+import com.lahtinen.app.websocket.chat.port.rest.request.JoinRoomRequest;
+import com.lahtinen.app.websocket.chat.port.rest.request.Request;
+import com.lahtinen.app.websocket.chat.port.rest.request.SendMessageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

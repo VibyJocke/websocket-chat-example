@@ -1,4 +1,4 @@
-package com.lahtinen.cloud.service.frontend.port.rest.response;
+package com.lahtinen.app.websocket.chat.port.rest.response;
 
 public class MessageResponse {
     private final String message;

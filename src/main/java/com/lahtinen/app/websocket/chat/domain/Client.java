@@ -1,4 +1,4 @@
-package com.lahtinen.cloud.service.frontend.domain;
+package com.lahtinen.app.websocket.chat.domain;
 
 import javax.websocket.Session;
 
