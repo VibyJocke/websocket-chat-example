@@ -8,7 +8,7 @@ import io.dropwizard.setup.Environment;
 
 public class WebsocketApp extends Application<WebsocketAppConfiguration> {
 
-    private WebsocketBundle<WebsocketAppConfiguration> websocketBundle = new WebsocketBundle<>();
+    private static final WebsocketBundle<WebsocketAppConfiguration> WEBSOCKET_BUNDLE = new WebsocketBundle<>();
 
     public static void main(String[] args) throws Exception {
         new WebsocketApp().run(args);
@@ -21,11 +21,11 @@ public class WebsocketApp extends Application<WebsocketAppConfiguration> {
 
     @Override
     public void initialize(Bootstrap<WebsocketAppConfiguration> bootstrap) {
-        bootstrap.addBundle(websocketBundle);
+        bootstrap.addBundle(WEBSOCKET_BUNDLE);
     }
 
     @Override
     public void run(WebsocketAppConfiguration configuration, Environment environment) {
-        websocketBundle.addEndpoint(ChatResource.class);
+        WEBSOCKET_BUNDLE.addEndpoint(ChatResource.class);
     }
 }

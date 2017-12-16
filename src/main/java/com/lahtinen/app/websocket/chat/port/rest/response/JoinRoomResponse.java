@@ -1,11 +1,11 @@
 package com.lahtinen.app.websocket.chat.port.rest.response;
 
-import java.util.List;
+import java.util.Collection;
 
 public class JoinRoomResponse {
-    private final List<String> users;
+    private final Collection<String> users;
 
-    public JoinRoomResponse(List<String> users) {
+    public JoinRoomResponse(Collection<String> users) {
         this.users = users;
     }
 }

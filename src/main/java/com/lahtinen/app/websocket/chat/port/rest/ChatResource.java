@@ -5,6 +5,7 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 import com.lahtinen.app.websocket.chat.domain.ChatService;
 import com.lahtinen.app.websocket.chat.port.rest.request.Request;
+import com.lahtinen.app.websocket.chat.port.rest.response.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,8 +49,8 @@ public class ChatResource {
         switch (parsedRequest.type) {
             case "CREATE-ROOM":
                 chatService.createRoom(
-                        (String) content.get("roomName"),
-                        (String) content.get("roomPassword")
+                        (String) content.get("name"),
+                        (String) content.get("password")
                 );
                 LOGGER.info("User session [{}] created room [{}]", session.getId(), content.get("roomName"));
                 break;
@@ -64,7 +65,8 @@ public class ChatResource {
                 break;
             case "MESSAGE":
                 chatService.sendMessage(
-                        (String) content.get("roomName"),
+                        session.getId(),
+                        (String) content.get("room"),
                         (String) content.get("message")
                 );
                 LOGGER.info("User session [{}] sent message [{}]", session.getId(), content.get("message"));
@@ -84,5 +86,10 @@ public class ChatResource {
     @OnError
     public void onError(Throwable error) {
         LOGGER.error("Error", error);
+        try {
+            session.getAsyncRemote().sendObject(GSON.toJson(new ErrorResponse(error.getMessage())));
+        } catch (Exception e) {
+            LOGGER.error("Failed to reply error", e);
+        }
     }
 }
