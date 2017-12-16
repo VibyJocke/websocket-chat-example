@@ -2,11 +2,9 @@ package com.lahtinen.app.websocket.chat.port.rest;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.internal.LinkedTreeMap;
 import com.lahtinen.app.websocket.chat.domain.ChatService;
-import com.lahtinen.app.websocket.chat.port.rest.request.CreateRoomRequest;
-import com.lahtinen.app.websocket.chat.port.rest.request.JoinRoomRequest;
 import com.lahtinen.app.websocket.chat.port.rest.request.Request;
-import com.lahtinen.app.websocket.chat.port.rest.request.SendMessageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,31 +37,40 @@ public class ChatResource {
         LOGGER.info("Message: " + message);
         try {
             Request parsedRequest = GSON.fromJson(message, Request.class);
-            parseRequest(parsedRequest, parsedRequest.getContent());
+            parseRequest(parsedRequest, parsedRequest.content);
         } catch (JsonSyntaxException e) {
             LOGGER.warn("Failed to parse message");
         }
     }
 
     // TODO: replace uglyness with an event-bus or something
-    private void parseRequest(Request parsedRequest, Object messageContent) {
-        switch (parsedRequest.getType()) {
+    private void parseRequest(Request parsedRequest, LinkedTreeMap content) {
+        switch (parsedRequest.type) {
             case "CREATE-ROOM":
-                CreateRoomRequest request = (CreateRoomRequest) messageContent;
-                chatService.createRoom(request.getRoomName(), request.getRoomPassword());
-                LOGGER.info("User session [{}] created room [{}]", session.getId(), request.getRoomName());
+                chatService.createRoom(
+                        (String) content.get("roomName"),
+                        (String) content.get("roomPassword")
+                );
+                LOGGER.info("User session [{}] created room [{}]", session.getId(), content.get("roomName"));
                 break;
             case "JOIN-ROOM":
-                JoinRoomRequest joinRequest = (JoinRoomRequest) messageContent;
-                chatService.connectToRoom(session, joinRequest.getRoomName());
-                LOGGER.info("User session [{}] joined room [{}] with username [{}]", session.getId(), joinRequest.getRoomName(), joinRequest.getUserName());
+                chatService.connectToRoom(
+                        session.getId(),
+                        (String) content.get("roomName"),
+                        (String) content.get("userName"),
+                        (String) content.get("password")
+                );
+                LOGGER.info("User session [{}] joined room [{}] with username [{}]", session.getId(), content.get("roomName"), content.get("userName"));
                 break;
             case "MESSAGE":
-                SendMessageRequest messageRequest = (SendMessageRequest) messageContent;
-                chatService.sendMessage(messageRequest.getMessage());
+                chatService.sendMessage(
+                        (String) content.get("roomName"),
+                        (String) content.get("message")
+                );
+                LOGGER.info("User session [{}] sent message [{}]", session.getId(), content.get("message"));
                 break;
             default:
-                LOGGER.info("Unsupported message type: " + parsedRequest.getType());
+                LOGGER.info("Unsupported message type: " + parsedRequest.type);
                 break;
         }
     }
