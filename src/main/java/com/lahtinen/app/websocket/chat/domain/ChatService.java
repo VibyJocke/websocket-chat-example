@@ -7,19 +7,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.websocket.Session;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-import static java.util.stream.Collectors.toList;
-
-// TODO: websocket.Session should not exist here as it is not a domain entity.
 public class ChatService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatService.class);
     private static final Gson GSON = new Gson();
 
-    private final Map<String /* session id */, Session> userSessions = new HashMap<>();
-    private final Map<String /* chat room name*/, ChatRoom> chatRooms = new HashMap<>();
+    private final Map<String /* session id */, Session> userSessions = new ConcurrentHashMap<>();
+    private final Map<String /* chat room name*/, Room> rooms = new ConcurrentHashMap<>();
 
     public static ChatService getInstance() {
         return Holder.INSTANCE;
@@ -29,29 +25,31 @@ public class ChatService {
         userSessions.put(session.getId(), session);
     }
 
-    public void disconnected(Session session) {
-        userSessions.remove(session.getId());
+    public void disconnected(String sessionId) {
+        userSessions.remove(sessionId);
+        rooms.values().forEach(room -> room.removeClient(sessionId));
     }
 
     public void createRoom(String name, String password) {
-        if (chatRooms.containsKey(name)) {
+        if (rooms.containsKey(name)) {
             throw new IllegalArgumentException("Chat room names must be unique");
         }
-        chatRooms.put(name, new ChatRoom(name, password));
+        rooms.put(name, new Room(name, password));
     }
 
     public void connectToRoom(String sessionId, String roomName, String userName, String password) {
         validateRoomExists(roomName);
 
-        if (!chatRooms.get(roomName).password.equals(password)) {
+        final Room room = rooms.get(roomName);
+        if (room.getPassword() != null && !room.getPassword().equals(password)) {
             throw new IllegalArgumentException("Access denied: invalid password");
         }
 
-        chatRooms.get(roomName).clients.put(sessionId, new Client(userName, userSessions.get(sessionId)));
+        room.addClient(new Client(userName, sessionId));
 
         broadcastMessage(
                 userSessions.get(sessionId),
-                new JoinRoomResponse(getUserNames(roomName))
+                new JoinRoomResponse(rooms.get(roomName).getUserNames())
         );
     }
 
@@ -59,8 +57,8 @@ public class ChatService {
         validateClientConnectedToRoom(sessionId, roomName);
 
         final MessageResponse messageResponse = new MessageResponse(message);
-        chatRooms.get(roomName).clients.values().forEach(
-                client -> broadcastMessage(client.session, messageResponse)
+        rooms.get(roomName).getRoomSessionIds().forEach(
+                id -> broadcastMessage(userSessions.get(id), messageResponse)
         );
     }
 
@@ -73,22 +71,16 @@ public class ChatService {
     }
 
     private void validateRoomExists(String roomName) {
-        if (!chatRooms.containsKey(roomName)) {
+        if (!rooms.containsKey(roomName)) {
             throw new IllegalArgumentException("Chat room not found");
         }
     }
 
     private void validateClientConnectedToRoom(String sessionId, String roomName) {
         validateRoomExists(roomName);
-        if (!chatRooms.get(roomName).clients.containsKey(sessionId)) {
+        if (!rooms.get(roomName).isUserConnected(sessionId)) {
             throw new IllegalArgumentException("Access denied: not connected to room");
         }
-    }
-
-    private List<String> getUserNames(String roomName) {
-        return chatRooms.get(roomName).clients.values().stream()
-                .map(client -> client.username)
-                .collect(toList());
     }
 
     private static class Holder {

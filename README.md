@@ -10,5 +10,38 @@ A simple example how to set up web sockets in a Dropwizard application, and crea
 ## How to build
 Simply run 'mvn package' from root.
 
-## Todo
-*Implement*
+## API
+Create room
+```json
+{
+    "type": "CREATE-ROOM",
+    "content": {
+        "name": "",
+        "password": ""
+    }
+}
+```json
+Join room
+```
+{
+    "type": "JOIN-ROOM",
+    "content": {
+        "roomName": "",
+        "userName": "",
+        "password": ""
+    }
+}
+```
+Message room
+```json
+{
+    "type": "MESSAGE",
+    "content": {
+        "roomName": "",
+        "message": ""
+    }
+}
+```
+
+## TODO
+- Return last X messages sent in room when a client connects.

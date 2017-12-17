@@ -1,10 +1,7 @@
 package com.lahtinen.app.websocket.chat.port.rest;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.internal.LinkedTreeMap;
 import com.lahtinen.app.websocket.chat.domain.ChatService;
-import com.lahtinen.app.websocket.chat.port.rest.request.Request;
 import com.lahtinen.app.websocket.chat.port.rest.response.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,75 +18,39 @@ import javax.websocket.server.ServerEndpoint;
 public class ChatResource {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatResource.class);
     private static final Gson GSON = new Gson();
-
-    private final ChatService chatService = ChatService.getInstance();
+    private static final ChatService CHAT_SERVICE = ChatService.getInstance();
 
     private Session session;
 
     @OnOpen
     public void createSession(Session session) {
         LOGGER.info("Session established: " + session.getId());
-        chatService.connected(session);
+        CHAT_SERVICE.connected(session);
         this.session = session;
     }
 
     @OnMessage
     public void onMessage(String message) {
         LOGGER.info("Message: " + message);
-        try {
-            Request parsedRequest = GSON.fromJson(message, Request.class);
-            parseRequest(parsedRequest, parsedRequest.content);
-        } catch (JsonSyntaxException e) {
-            LOGGER.warn("Failed to parse message");
-        }
-    }
-
-    // TODO: replace uglyness with an event-bus or something
-    private void parseRequest(Request parsedRequest, LinkedTreeMap content) {
-        switch (parsedRequest.type) {
-            case "CREATE-ROOM":
-                chatService.createRoom(
-                        (String) content.get("name"),
-                        (String) content.get("password")
-                );
-                LOGGER.info("User session [{}] created room [{}]", session.getId(), content.get("roomName"));
-                break;
-            case "JOIN-ROOM":
-                chatService.connectToRoom(
-                        session.getId(),
-                        (String) content.get("roomName"),
-                        (String) content.get("userName"),
-                        (String) content.get("password")
-                );
-                LOGGER.info("User session [{}] joined room [{}] with username [{}]", session.getId(), content.get("roomName"), content.get("userName"));
-                break;
-            case "MESSAGE":
-                chatService.sendMessage(
-                        session.getId(),
-                        (String) content.get("room"),
-                        (String) content.get("message")
-                );
-                LOGGER.info("User session [{}] sent message [{}]", session.getId(), content.get("message"));
-                break;
-            default:
-                LOGGER.info("Unsupported message type: " + parsedRequest.type);
-                break;
-        }
+        MessageHandler.handleRequest(session.getId(), message);
     }
 
     @OnClose
-    public void closeSession(final Session session, CloseReason cr) {
+    public void closeSession(Session session, CloseReason cr) {
         LOGGER.info("Session [{}] closed, with reason [{}]", session.getId(), cr.getReasonPhrase());
-        chatService.disconnected(session);
+        CHAT_SERVICE.disconnected(session.getId());
     }
 
     @OnError
     public void onError(Throwable error) {
-        LOGGER.error("Error", error);
-        try {
-            session.getAsyncRemote().sendObject(GSON.toJson(new ErrorResponse(error.getMessage())));
-        } catch (Exception e) {
-            LOGGER.error("Failed to reply error", e);
+        if (error instanceof IllegalArgumentException) {
+            try {
+                session.getAsyncRemote().sendObject(GSON.toJson(new ErrorResponse(error.getMessage())));
+            } catch (Exception e) {
+                LOGGER.error("Failed to reply error", e);
+            }
+        } else {
+            LOGGER.error("Unexpected error", error);
         }
     }
 }

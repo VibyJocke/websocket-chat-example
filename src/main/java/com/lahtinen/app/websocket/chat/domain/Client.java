@@ -1,13 +1,11 @@
 package com.lahtinen.app.websocket.chat.domain;
 
-import javax.websocket.Session;
-
 public class Client {
     public final String username;
-    public final Session session;
+    public final String sessionId;
 
-    public Client(String username, Session session) {
+    Client(String username, String sessionId) {
         this.username = username;
-        this.session = session;
+        this.sessionId = sessionId;
     }
 }
