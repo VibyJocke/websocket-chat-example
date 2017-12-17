@@ -45,3 +45,4 @@ Message room
 
 ## TODO
 - Return last X messages sent in room when a client connects.
+- Add more and clean up tests.

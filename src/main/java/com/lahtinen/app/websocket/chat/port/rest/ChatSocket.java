@@ -15,8 +15,8 @@ import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
 @ServerEndpoint("/chat")
-public class ChatResource {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChatResource.class);
+public class ChatSocket {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChatSocket.class);
     private static final Gson GSON = new Gson();
     private static final ChatService CHAT_SERVICE = ChatService.getInstance();
 
