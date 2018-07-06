@@ -20,9 +20,9 @@ Create room
         "password": ""
     }
 }
-```json
-Join room
 ```
+Join room
+```json
 {
     "type": "JOIN-ROOM",
     "content": {
